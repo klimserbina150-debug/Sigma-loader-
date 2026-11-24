@@ -15,11 +15,10 @@ local MUTED = Color3.fromRGB(120,120,120)
 local ACCENT = Color3.fromRGB(180, 100, 255)
 local ITEM_BG = Color3.fromRGB(15,15,15)
 
--- Ссылки на твои репозитории
+-- Ссылки на скрипты
 local URL_NEWGUI_1 = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/NewGui"
 local URL_NEWGUI_2 = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/P2"
-local URL_OLDGUI = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal/main/SigmaAaaaaaah.txt" 
--- ^ ЕСЛИ Old GUI лежит по другому пути, поменяй ссылку здесь
+local URL_OLDGUI = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal/refs/heads/main/SigmaAaaaaaah"
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "SigmaLoaderGUI"
@@ -29,7 +28,7 @@ sg.DisplayOrder = 999998
 sg.Parent = PG
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.fromOffset(340, 230)
+main.Size = UDim2.fromOffset(340, 200)
 main.Position = UDim2.fromScale(0.5, 0.5)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
 main.BackgroundColor3 = Color3.fromRGB(0,0,0)
@@ -107,25 +106,25 @@ local function createScriptButton(name, loaderFunc)
     end)
 
     btn.MouseButton1Click:Connect(function()
-        -- СРАЗУ УДАЛЯЕМ ЛОАДЕР, ЧТОБЫ НЕ МЕШАЛ
+        -- Мгновенно закрываем лоадер
         pcall(function() sg:Destroy() end)
         
-        -- И запускаем скрипт с небольшой задержкой
+        -- Запускаем скрипт
         task.spawn(function()
             task.wait(0.1)
             local ok, err = pcall(loaderFunc)
             if not ok then
-                warn("[Sigma Loader] Ошибка запуска: " .. tostring(err))
+                warn("[Sigma Loader] Error: " .. tostring(err))
             end
         end)
     end)
 end
 
--- === 1. New GUI (Sigma UI) ===
+-- === 1. New GUI ===
 createScriptButton("Sigma Universal (New GUI)", function()
     local ok1, p1 = pcall(function() return game:HttpGet(URL_NEWGUI_1 .. "?v=" .. os.time()) end)
     local ok2, p2 = pcall(function() return game:HttpGet(URL_NEWGUI_2 .. "?v=" .. os.time()) end)
-    if not ok1 or not ok2 then error("Failed to download New GUI files") end
+    if not ok1 or not ok2 then error("Failed to download files") end
     
     local full = p1 .. "\n\n" .. p2
     local fn, err = loadstring(full)
@@ -133,10 +132,10 @@ createScriptButton("Sigma Universal (New GUI)", function()
     fn()
 end)
 
--- === 2. Old GUI (Linoria) ===
+-- === 2. Old GUI ===
 createScriptButton("Sigma Universal (Old GUI)", function()
     local ok, src = pcall(function() return game:HttpGet(URL_OLDGUI .. "?v=" .. os.time()) end)
-    if not ok then error("Failed to download Old GUI file") end
+    if not ok then error("Failed to download Old GUI") end
     
     local fn, err = loadstring(src)
     if not fn then error(err) end
