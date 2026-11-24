@@ -14,7 +14,12 @@ local WHITE = Color3.new(1,1,1)
 local MUTED = Color3.fromRGB(120,120,120)
 local ACCENT = Color3.fromRGB(180, 100, 255)
 local ITEM_BG = Color3.fromRGB(15,15,15)
-local BASE_URL = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/"
+
+-- Ссылки на твои репозитории
+local URL_NEWGUI_1 = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/NewGui"
+local URL_NEWGUI_2 = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/P2"
+local URL_OLDGUI = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal/main/SigmaAaaaaaah.txt" 
+-- ^ ЕСЛИ Old GUI лежит по другому пути, поменяй ссылку здесь
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "SigmaLoaderGUI"
@@ -69,21 +74,6 @@ scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 local sLayout = Instance.new("UIListLayout", scroll)
 sLayout.Padding = UDim.new(0,6)
 
-local statusLabel = Instance.new("TextLabel", main)
-statusLabel.Size = UDim2.new(1, -20, 0, 20)
-statusLabel.Position = UDim2.new(0, 10, 1, -25)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 10
-statusLabel.TextColor3 = MUTED
-statusLabel.TextXAlignment = Enum.TextXAlignment.Center
-statusLabel.Text = "Ready to launch"
-
-local function setStatus(text, color)
-    statusLabel.Text = text
-    statusLabel.TextColor3 = color or MUTED
-end
-
 local function createScriptButton(name, loaderFunc)
     local btn = Instance.new("TextButton", scroll)
     btn.Size = UDim2.new(1, 0, 0, 40)
@@ -117,30 +107,25 @@ local function createScriptButton(name, loaderFunc)
     end)
 
     btn.MouseButton1Click:Connect(function()
-        setStatus("Loading " .. name .. "...", ACCENT)
+        -- СРАЗУ УДАЛЯЕМ ЛОАДЕР, ЧТОБЫ НЕ МЕШАЛ
+        pcall(function() sg:Destroy() end)
+        
+        -- И запускаем скрипт с небольшой задержкой
         task.spawn(function()
+            task.wait(0.1)
             local ok, err = pcall(loaderFunc)
-            if ok then
-                setStatus(name .. " loaded!", WHITE)
-                task.wait(1.5)
-                sg.Enabled = false
-            else
-                setStatus("Error: " .. tostring(err), Color3.fromRGB(255, 80, 80))
+            if not ok then
+                warn("[Sigma Loader] Ошибка запуска: " .. tostring(err))
             end
         end)
     end)
 end
 
--- === Скрипты ===
-
--- 1. Universal (New GUI)
+-- === 1. New GUI (Sigma UI) ===
 createScriptButton("Sigma Universal (New GUI)", function()
-    local url1 = BASE_URL .. "NewGui?v=" .. os.time()
-    local url2 = BASE_URL .. "P2?v=" .. os.time()
-    
-    local ok1, p1 = pcall(function() return game:HttpGet(url1) end)
-    local ok2, p2 = pcall(function() return game:HttpGet(url2) end)
-    if not ok1 or not ok2 then error("Failed to download files") end
+    local ok1, p1 = pcall(function() return game:HttpGet(URL_NEWGUI_1 .. "?v=" .. os.time()) end)
+    local ok2, p2 = pcall(function() return game:HttpGet(URL_NEWGUI_2 .. "?v=" .. os.time()) end)
+    if not ok1 or not ok2 then error("Failed to download New GUI files") end
     
     local full = p1 .. "\n\n" .. p2
     local fn, err = loadstring(full)
@@ -148,14 +133,15 @@ createScriptButton("Sigma Universal (New GUI)", function()
     fn()
 end)
 
--- 2. Universal (Old GUI - Linoria) - если зальешь его части на гит
--- createScriptButton("Sigma Universal (Old GUI)", function()
---     local url1 = BASE_URL .. "SigmaAaaaaaah.lua?v=" .. os.time()
---     local src = game:HttpGet(url1)
---     local fn, err = loadstring(src)
---     if not fn then error(err) end
---     fn()
--- end)
+-- === 2. Old GUI (Linoria) ===
+createScriptButton("Sigma Universal (Old GUI)", function()
+    local ok, src = pcall(function() return game:HttpGet(URL_OLDGUI .. "?v=" .. os.time()) end)
+    if not ok then error("Failed to download Old GUI file") end
+    
+    local fn, err = loadstring(src)
+    if not fn then error(err) end
+    fn()
+end)
 
 -- Перетаскивание
 local dragging = false
@@ -181,6 +167,8 @@ end)
 UIS.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightShift then
-        sg.Enabled = not sg.Enabled
+        if sg and sg.Parent then
+            sg.Enabled = not sg.Enabled
+        end
     end
 end)
