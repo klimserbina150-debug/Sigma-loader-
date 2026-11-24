@@ -1,0 +1,186 @@
+-- Sigma Loader
+-- by @sigmatop1jj | t.me/megaswitifox
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local LP = Players.LocalPlayer
+local PG = LP:WaitForChild("PlayerGui")
+
+local old = PG:FindFirstChild("SigmaLoaderGUI")
+if old then old:Destroy() end
+
+local WHITE = Color3.new(1,1,1)
+local MUTED = Color3.fromRGB(120,120,120)
+local ACCENT = Color3.fromRGB(180, 100, 255)
+local ITEM_BG = Color3.fromRGB(15,15,15)
+local BASE_URL = "https://raw.githubusercontent.com/klimserbina150-debug/Sigma-universal-NewGui-/refs/heads/main/"
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "SigmaLoaderGUI"
+sg.IgnoreGuiInset = true
+sg.ResetOnSpawn = false
+sg.DisplayOrder = 999998
+sg.Parent = PG
+
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.fromOffset(340, 230)
+main.Position = UDim2.fromScale(0.5, 0.5)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(0,0,0)
+main.BackgroundTransparency = 0.05
+main.ClipsDescendants = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
+
+local header = Instance.new("Frame", main)
+header.Size = UDim2.new(1, 0, 0, 35)
+header.BackgroundTransparency = 1
+
+local title = Instance.new("TextLabel", header)
+title.Text = "sigma loader"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextColor3 = WHITE
+title.Position = UDim2.new(0, 15, 0.5, 0)
+title.AnchorPoint = Vector2.new(0, 0.5)
+title.BackgroundTransparency = 1
+title.AutomaticSize = Enum.AutomaticSize.XY
+
+local line1 = Instance.new("Frame", main)
+line1.Size = UDim2.new(1,0,0,1)
+line1.Position = UDim2.fromOffset(0,35)
+line1.BackgroundColor3 = WHITE
+line1.BackgroundTransparency = 0.9
+line1.BorderSizePixel = 0
+
+local content = Instance.new("Frame", main)
+content.Size = UDim2.new(1,0,1,-45)
+content.Position = UDim2.fromOffset(0,40)
+content.BackgroundTransparency = 1
+
+local scroll = Instance.new("ScrollingFrame", content)
+scroll.Size = UDim2.new(1,-20,1,-10)
+scroll.Position = UDim2.fromOffset(10,5)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 2
+scroll.CanvasSize = UDim2.new()
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local sLayout = Instance.new("UIListLayout", scroll)
+sLayout.Padding = UDim.new(0,6)
+
+local statusLabel = Instance.new("TextLabel", main)
+statusLabel.Size = UDim2.new(1, -20, 0, 20)
+statusLabel.Position = UDim2.new(0, 10, 1, -25)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 10
+statusLabel.TextColor3 = MUTED
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+statusLabel.Text = "Ready to launch"
+
+local function setStatus(text, color)
+    statusLabel.Text = text
+    statusLabel.TextColor3 = color or MUTED
+end
+
+local function createScriptButton(name, loaderFunc)
+    local btn = Instance.new("TextButton", scroll)
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.BackgroundColor3 = ITEM_BG
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(40, 40, 40)
+    btnStroke.Thickness = 1
+
+    local lbl = Instance.new("TextLabel", btn)
+    lbl.Size = UDim2.new(1, -20, 1, 0)
+    lbl.Position = UDim2.fromOffset(15, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextSize = 12
+    lbl.TextColor3 = WHITE
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Text = name
+
+    btn.MouseEnter:Connect(function()
+        TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 25)}):Play()
+        TS:Create(btnStroke, TweenInfo.new(0.2), {Color = ACCENT}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TS:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = ITEM_BG}):Play()
+        TS:Create(btnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(40, 40, 40)}):Play()
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        setStatus("Loading " .. name .. "...", ACCENT)
+        task.spawn(function()
+            local ok, err = pcall(loaderFunc)
+            if ok then
+                setStatus(name .. " loaded!", WHITE)
+                task.wait(1.5)
+                sg.Enabled = false
+            else
+                setStatus("Error: " .. tostring(err), Color3.fromRGB(255, 80, 80))
+            end
+        end)
+    end)
+end
+
+-- === Скрипты ===
+
+-- 1. Universal (New GUI)
+createScriptButton("Sigma Universal (New GUI)", function()
+    local url1 = BASE_URL .. "NewGui?v=" .. os.time()
+    local url2 = BASE_URL .. "P2?v=" .. os.time()
+    
+    local ok1, p1 = pcall(function() return game:HttpGet(url1) end)
+    local ok2, p2 = pcall(function() return game:HttpGet(url2) end)
+    if not ok1 or not ok2 then error("Failed to download files") end
+    
+    local full = p1 .. "\n\n" .. p2
+    local fn, err = loadstring(full)
+    if not fn then error(err) end
+    fn()
+end)
+
+-- 2. Universal (Old GUI - Linoria) - если зальешь его части на гит
+-- createScriptButton("Sigma Universal (Old GUI)", function()
+--     local url1 = BASE_URL .. "SigmaAaaaaaah.lua?v=" .. os.time()
+--     local src = game:HttpGet(url1)
+--     local fn, err = loadstring(src)
+--     if not fn then error(err) end
+--     fn()
+-- end)
+
+-- Перетаскивание
+local dragging = false
+local dragStart, startPos
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = UIS:GetMouseLocation()
+        startPos = main.Position
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local m = UIS:GetMouseLocation()
+        local d = m - dragStart
+        main.Position = UDim2.fromOffset(startPos.X.Offset + d.X, startPos.Y.Offset + d.Y)
+    end
+end)
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
+UIS.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        sg.Enabled = not sg.Enabled
+    end
+end)
